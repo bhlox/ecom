@@ -1,0 +1,42 @@
+version: "3"
+
+env:
+  ENV: testing
+
+dotenv: [".env"]
+
+tasks:
+  dev:
+    cmds:
+      - air
+
+  build:
+    cmds:
+      - go build ./cmd/main.go && ./main
+
+  test:
+    cmds:
+      - go test -v ./...
+
+  sql-gen:
+    cmds:
+      - sqlc generate
+
+  sql-lint:
+    cmds:
+      - sqlc vet
+
+  goose-up:
+    dir: .\sql\schema\
+    cmds:
+      - goose postgres $DBSTRING up
+
+  goose-down:
+    dir: .\sql\schema\
+    cmds:
+      - goose postgres $DBSTRING down
+
+  goose-stats:
+    dir: .\sql\schema\
+    cmds:
+      - goose postgres $DBSTRING status
