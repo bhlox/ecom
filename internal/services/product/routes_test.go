@@ -33,11 +33,7 @@ func TestProducts(t *testing.T) {
 	}
 
 	var insertStatementsSlice []string
-	for i, record := range records {
-		// skipping because this just contains the column (e.g. name, description, etc)
-		if i == 0 {
-			continue
-		}
+	for _, record := range records {
 		insertStatement := fmt.Sprintf("INSERT INTO products (id, name, description, image, price, quantity) VALUES ('%s', '%s','%s', '%s','%s', '%s');", record[0], record[1], record[2], record[3], record[4], record[5])
 		insertStatementsSlice = append(insertStatementsSlice, insertStatement)
 	}
