@@ -43,7 +43,7 @@ func TestProducts(t *testing.T) {
 	}
 	insertProductStatements := strings.Join(insertStatementsSlice, " ")
 
-	pgContainer, database := utils.CreateDbTestContainer(t, ctx, insertProductStatements)
+	database := utils.CreateDbTestContainer(t, ctx, insertProductStatements)
 
 	router := http.NewServeMux()
 	v1Router := http.NewServeMux()
@@ -146,16 +146,5 @@ func TestProducts(t *testing.T) {
 				assert.NotNilf(t, rr.Body, "should contain the product details")
 			}
 		})
-		t.Cleanup(func() {
-			err := pgContainer.Restore(ctx)
-			if err != nil {
-				t.Fatal(err)
-			}
-		})
 	}
-	// t.Cleanup(func() {
-	// 	if err := pgContainer.Terminate(ctx); err != nil {
-	// 		t.Fatalf("failed to terminate container: %s", err)
-	// 	}
-	// })
 }

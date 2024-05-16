@@ -64,7 +64,7 @@ func TestCheckout(t *testing.T) {
 	}
 	insertProductStatements := strings.Join(insertStatementsSlice, " ")
 
-	_, database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement, insertProductStatements)
+	 database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement, insertProductStatements)
 
 	router := http.NewServeMux()
 	v1Router := http.NewServeMux()

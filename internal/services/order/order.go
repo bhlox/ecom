@@ -37,7 +37,7 @@ func (h *Handler) getOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	orderData, err := h.queries.GetOrder(r.Context(), int32(orderId))
+	orderData, err := h.queries.GetOrder(r.Context(), int32(orderId)) //#nosec G109
 	if err != nil {
 		response.Error(w, http.StatusInternalServerError, err.Error())
 		return

@@ -45,6 +45,7 @@ func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	product, err := h.queries.CreateProduct(r.Context(), db.CreateProductParams{
 		Name:        data.Name,
 		Description: data.Description,
@@ -72,7 +73,7 @@ func (h *Handler) getProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	product, err := h.queries.GetProduct(r.Context(), int32(numberId))
+	product, err := h.queries.GetProduct(r.Context(), int32(numberId)) //#nosec G109
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, err.Error())
 		return

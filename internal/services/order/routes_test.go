@@ -70,7 +70,7 @@ func TestOrder(t *testing.T) {
 	}
 	purchasesSqlStatement := string(purchasesSql)
 
-	_, database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement, insertProductStatements, purchasesSqlStatement)
+	database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement, insertProductStatements, purchasesSqlStatement)
 
 	router := http.NewServeMux()
 	v1Router := http.NewServeMux()

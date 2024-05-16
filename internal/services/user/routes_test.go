@@ -49,7 +49,7 @@ func TestUserRoutes(t *testing.T) {
 
 	insertUsersStatement := strings.Join(insertStatementsSlice, " ")
 
-	_, database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement)
+	database := utils.CreateDbTestContainer(t, ctx, insertUsersStatement)
 
 	router := http.NewServeMux()
 	v1Router := http.NewServeMux()
@@ -120,8 +120,8 @@ func TestUserRoutes(t *testing.T) {
 			}
 			rr := httptest.NewRecorder()
 			router.ServeHTTP(rr, req)
-			assert.Equal(t, c.expectedCode, rr.Code, c.expectedMsg)
 
+			assert.Equal(t, c.expectedCode, rr.Code, c.expectedMsg)
 		})
 	}
 
