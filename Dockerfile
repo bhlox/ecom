@@ -8,6 +8,7 @@ FROM golang:1.22.2 AS build-stage
 
   COPY . .
 
+  RUN apt-get update && apt-get install -y ca-certificates
   RUN CGO_ENABLED=0 GOOS=linux go build -o /api ./cmd/main.go
 
   # Run the tests in the container
@@ -19,6 +20,8 @@ FROM scratch AS build-release-stage
   WORKDIR /
 
   COPY --from=build-stage /api /api
+
+  COPY --from=build-stage /etc/ssl/certs /etc/ssl/certs
 
   EXPOSE 8080
 

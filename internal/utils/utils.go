@@ -16,9 +16,8 @@ import (
 
 	"github.com/bhlox/ecom/internal/db"
 	"github.com/go-playground/validator/v10"
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
-	"github.com/testcontainers/testcontainers-go/wait"
+	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -49,7 +48,7 @@ func HashString(text string) (string, error) {
 	return hashedPasswordStr, nil
 }
 
-func CreateDbTestContainer(t testing.TB, ctx context.Context, insertStatement ...string) (*postgres.PostgresContainer, *sql.DB) {
+func CreateDbTestContainer(t testing.TB, ctx context.Context, insertStatement ...string) *sql.DB {
 	t.Helper()
 
 	username := "postgres"
@@ -87,47 +86,66 @@ func CreateDbTestContainer(t testing.TB, ctx context.Context, insertStatement ..
 	// 2. Join all SQL scripts into a single string
 	allScripts := strings.Join(sqlScripts, "\n")
 
-	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:15.3-alpine"),
-		testcontainers.WithEnv(map[string]string{"TESTCONTAINERS_RYUK_DISABLED": "true"}),
-		// postgres.WithInitScripts(filepath.Join("../../..", "testdata", "table_users.sql")),
-		// postgres.WithInitScripts("../../../testdata/user/user.sql"),
-		postgres.WithDatabase(dbName),
-		postgres.WithUsername(username),
-		postgres.WithPassword(password),
-		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithOccurrence(2).WithStartupTimeout(5*time.Second)),
-	)
+	// 3. initiate docker test container config
+	pool, err := dockertest.NewPool("")
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Could not construct pool: %s", err)
 	}
 
-	// 3. execute all commands
-	_, _, err = pgContainer.Exec(ctx, []string{"psql", "-U", username, "-d", dbName, "-c", allScripts})
+	err = pool.Client.Ping()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Could not connect to Docker: %s", err)
+	}
+
+	resource, err := pool.RunWithOptions(&dockertest.RunOptions{
+		Repository: "postgres",
+		Tag:        "11",
+		Env: []string{
+			fmt.Sprintf("POSTGRES_PASSWORD=%v", password),
+			fmt.Sprintf("POSTGRES_USER=%v", username),
+			fmt.Sprintf("POSTGRES_DB=%v", dbName),
+			"listen_addresses = '*'",
+		},
+	}, func(config *docker.HostConfig) {
+		// set AutoRemove to true so that stopped container goes away by itself
+		config.AutoRemove = true
+		config.RestartPolicy = docker.RestartPolicy{Name: "no"}
+	})
+	if err != nil {
+		t.Fatalf("Could not start resource: %s", err)
+	}
+
+	hostAndPort := resource.GetHostPort("5432/tcp")
+	databaseUrl := fmt.Sprintf("postgres://%v:%v@%s/%v?sslmode=disable", username, password, hostAndPort, dbName)
+
+	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+
+	pool.MaxWait = 120 * time.Second
+
+	var database *sql.DB
+
+	fmt.Println("initiaing connect to DB")
+	if err = pool.Retry(func() error {
+		database, err = db.InitDB(databaseUrl)
+		if err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("Could not connect to docker: %s", err)
+	}
+
+	// 4. execute all commands
+	_, err = database.Exec(allScripts)
+	if err != nil {
+		t.Fatalf("error executing query")
 	}
 	for _, queries := range insertStatement {
-		_, _, err = pgContainer.Exec(ctx, []string{"psql", "-U", username, "-d", dbName, "-c", queries})
+		_, err = database.Exec(queries)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatal("error executing query")
 		}
 	}
 
-	err = pgContainer.Snapshot(ctx, postgres.WithSnapshotName("test-snapshot"))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	database, err := db.InitDB(connStr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return pgContainer, database
+	return database
 }
