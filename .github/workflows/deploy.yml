@@ -41,4 +41,4 @@ jobs:
         run: "gcloud builds submit --tag asia-southeast1-docker.pkg.dev/practice-423410/ecom-ar-repo/ecom:TAG . "
 
       - name: Deploy to Cloud Run
-        run: gcloud run deploy ecom --image asia-southeast1-docker.pkg.dev/practice-423410/practice-ar-repo/ecom:TAG --region asia-southeast1 --allow-unauthenticated --project practice-423410 --max-instances=4
+        run: gcloud run deploy ecom --image asia-southeast1-docker.pkg.dev/practice-423410/ecom-ar-repo/ecom:TAG --region asia-southeast1 --allow-unauthenticated --project practice-423410 --max-instances=4
