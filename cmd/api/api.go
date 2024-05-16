@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/bhlox/ecom/internal/db"
 	"github.com/bhlox/ecom/internal/health"
@@ -64,8 +65,9 @@ func (s *APIServer) Run() error {
 	// })
 
 	server := &http.Server{
-		Addr:    ":8080",
-		Handler: router,
+		Addr:              ":8080",
+		Handler:           router,
+		ReadHeaderTimeout: time.Second * 30,
 	}
 
 	log.Printf("🚀 server listening at localhost:%s", "8080")

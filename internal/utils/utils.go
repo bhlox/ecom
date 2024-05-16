@@ -118,13 +118,15 @@ func CreateDbTestContainer(t testing.TB, ctx context.Context, insertStatement ..
 	hostAndPort := resource.GetHostPort("5432/tcp")
 	databaseUrl := fmt.Sprintf("postgres://%v:%v@%s/%v?sslmode=disable", username, password, hostAndPort, dbName)
 
-	resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+	err = resource.Expire(120) // Tell docker to hard kill the container in 120 seconds
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	pool.MaxWait = 120 * time.Second
 
 	var database *sql.DB
 
-	fmt.Println("initiaing connect to DB")
 	if err = pool.Retry(func() error {
 		database, err = db.InitDB(databaseUrl)
 		if err != nil {

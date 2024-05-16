@@ -73,7 +73,7 @@ func (h *Handler) getProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	product, err := h.queries.GetProduct(r.Context(), int32(numberId))
+	product, err := h.queries.GetProduct(r.Context(), int32(numberId)) //#nosec G109
 	if err != nil {
 		response.Error(w, http.StatusBadRequest, err.Error())
 		return

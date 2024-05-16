@@ -14,7 +14,10 @@ func GenerateJWT(secret string, userID uuid.UUID) (string, error) {
 		"expires": time.Now().AddDate(0, 0, 30).Unix(),
 		// "role": "admin"
 	}
-	claims.Valid()
+	err := claims.Valid()
+	if err != nil {
+		return "", err
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signedToken, err := token.SignedString([]byte(secret))
 	if err != nil {
