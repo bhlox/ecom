@@ -45,6 +45,7 @@ func (h *Handler) createProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
 	product, err := h.queries.CreateProduct(r.Context(), db.CreateProductParams{
 		Name:        data.Name,
 		Description: data.Description,
