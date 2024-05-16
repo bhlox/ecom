@@ -1,3 +1,5 @@
+![code coverage badge](https://github.com/bhlox/ecom/actions/workflows/tests.yml/badge.svg)
+
 # Minimal E-commerce Setup
 
 A backend REST api implementation for an e-commerce platform, written in GoLang. It provides essential functionalities for user sign-ups, authentication using JSON Web Tokens (JWT), checkout processes, and retrieving orders. This project is more of a personal experience to understand core concepts of Go, particularly setting up an HTTP application.
