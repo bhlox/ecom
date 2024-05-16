@@ -42,3 +42,5 @@ Side note: if you have `task` installed on your machine, a `taskfile.yml` is pro
     docker build -t image-name .
     docker run --env-file=.env -p 8080:8080 image-name
 ```
+
+-This is currently running on GCP
